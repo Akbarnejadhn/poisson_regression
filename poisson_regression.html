@@ -383,7 +383,7 @@ summary {
 <div id="a" class="section level3">
 <h3>1-a</h3>
 <p>Fit a Poisson model (M1) with log link with W(carapace width) as the single predictor. Check the goodness of fit and interpret your model.</p>
-<pre class="r"><code># fir poisson model
+<pre class="r"><code># fit poisson model
 m1 = glm(sa ~ w, family=poisson(link = &quot;log&quot;), data=crab_data)
 summary(m1)</code></pre>
 <pre><code>## 
@@ -410,15 +410,55 @@ summary(m1)</code></pre>
 ## Number of Fisher Scoring iterations: 6</code></pre>
 <pre class="r"><code># gof
 deviance_m1 = m1$deviance
-df_m1 =  m1$df.residual             # df=n-p
-pval=1-pchisq(deviance_m1,df=df_m1) # chisq test
-pval                                # pvalue is 0 this shows that the fit is not good</code></pre>
+df_m1 =  m1$df.residual              # df=n-p  173-(1+1)=171
+pval1=1-pchisq(deviance_m1,df=df_m1) # chisq test
+pval1                                # pvalue is 0 this shows that the fit is not good</code></pre>
 <pre><code>## [1] 0</code></pre>
-<p>interpretation:</p>
+<p>interpretation: ……………..</p>
 </div>
 <div id="b" class="section level3">
 <h3>1-b</h3>
-<p>Fit a model (M2) with W and Wt as predictors. Compare it with the model in (a). Interpret your results.</p>
+<p>Fit a model (M2) with W and Wt(weight) as predictors. Compare it with the model in (a). Interpret your results.</p>
+<pre class="r"><code># fit poisson model
+m2 = glm(sa ~ w+wt, family=poisson(link = &quot;log&quot;), data=crab_data)
+summary(m2)</code></pre>
+<pre><code>## 
+## Call:
+## glm(formula = sa ~ w + wt, family = poisson(link = &quot;log&quot;), data = crab_data)
+## 
+## Deviance Residuals: 
+##     Min       1Q   Median       3Q      Max  
+## -2.9308  -1.9705  -0.5481   0.9700   4.9905  
+## 
+## Coefficients:
+##             Estimate Std. Error z value Pr(&gt;|z|)   
+## (Intercept) -1.29168    0.89929  -1.436  0.15091   
+## w            0.04590    0.04677   0.981  0.32640   
+## wt           0.44744    0.15864   2.820  0.00479 **
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## (Dispersion parameter for poisson family taken to be 1)
+## 
+##     Null deviance: 632.79  on 172  degrees of freedom
+## Residual deviance: 559.89  on 170  degrees of freedom
+## AIC: 921.18
+## 
+## Number of Fisher Scoring iterations: 6</code></pre>
+<pre class="r"><code># compare m_2 and m_1
+deviance_m2 = m2$deviance
+df_m2 =  m2$df.residual             # df=n-p   173-(2+1)=170
+
+test_stat =m1$deviance - m2$deviance
+df =df_m1 - df_m2 
+pval=1-pchisq(test_stat,df=df)      # chisq test
+pval</code></pre>
+<pre><code>## [1] 0.004694838</code></pre>
+<p>interpretation: ……………..</p>
+<p>Comparing the small model using only carapace width as predictor and the bigger model using both carapace width and weight as predictors, we can see that the p-value is 0.0046948. This shows that we reject null hypothesis (stating that the smaller moddel is legible), and conclude that the bigger model is the one that we should pick and continue with.</p>
+</div>
+<div id="c" class="section level3">
+<h3>1-c</h3>
 </div>
 
 

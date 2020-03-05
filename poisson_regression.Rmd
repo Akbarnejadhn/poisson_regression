@@ -38,22 +38,46 @@ crab_data = read_table2("HW5-crab.txt") %>%
 Fit a Poisson model (M1) with log link with W(carapace width) as the single predictor. Check the goodness of fit and interpret your model.
 ```{r poi_w}
 
-# fir poisson model
+# fit poisson model
 m1 = glm(sa ~ w, family=poisson(link = "log"), data=crab_data)
 summary(m1)
 
 # gof
 deviance_m1 = m1$deviance
-df_m1 =  m1$df.residual             # df=n-p
-pval=1-pchisq(deviance_m1,df=df_m1) # chisq test
-pval                                # pvalue is 0 this shows that the fit is not good
+df_m1 =  m1$df.residual              # df=n-p  173-(1+1)=171
+pval1=1-pchisq(deviance_m1,df=df_m1) # chisq test
+pval1                                # pvalue is 0 this shows that the fit is not good
 ```
 
-interpretation:
+interpretation: .................
+Assessing the goodness of fit of this model shows that the he p-value is `r round(pval1, 3)` which means that this model does not fit the data well.
 
 ### 1-b
-Fit a model (M2) with W and Wt as predictors. Compare it with the model in (a). Interpret your results.
+Fit a model (M2) with W and Wt(weight) as predictors. Compare it with the model in (a). Interpret your results.
 ```{r poi_w_wt}
+
+# fit poisson model
+m2 = glm(sa ~ w+wt, family=poisson(link = "log"), data=crab_data)
+summary(m2)
+
+# compare m_2 and m_1
+deviance_m2 = m2$deviance
+df_m2 =  m2$df.residual             # df=n-p   173-(2+1)=170
+
+test_stat =m1$deviance - m2$deviance
+df =df_m1 - df_m2 
+pval=1-pchisq(test_stat,df=df)      # chisq test
+pval
+```
+
+interpretation: .................
+
+Comparing the small model using only carapace width as predictor and the bigger model using both carapace width and weight as predictors, we can see that the p-value is `r round(pval, 3)`. This shows that we reject null hypothesis (stating that the smaller moddel is legible), and conclude that the bigger model is the one that we should pick and continue with.
+
+### 1-c
+Check over dispersion in M2. Interpret the model after adjusting for over dispersion.
+```{r overdisp}
+
 
 ```
 
