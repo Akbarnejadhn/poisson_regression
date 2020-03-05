@@ -78,6 +78,17 @@ Comparing the small model using only carapace width as predictor and the bigger 
 Check over dispersion in M2. Interpret the model after adjusting for over dispersion.
 ```{r overdisp}
 
+# calc dispersion parameter based on full model
+p_res=residuals(m2,type='pearson',data=crab_data)
+G=sum(p_res^2)
+pval_disp=1-pchisq(G,df=170)
+phi=G/170
+phi
+m2$deviance/m2$df.residual
 
+summary(m2,dispersion=phi)
 ```
 
+interpretation: .................
+
+The dispersion parameter is `r round(phi, 3)` for M2. After adjusting for over dispersion, it can be observed that the coefficients do not differ that much. However the covariate weight which was significant before adjusting for overdispersion becomes insignificant after adjusting for overdispersion.
