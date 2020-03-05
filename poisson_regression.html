@@ -380,6 +380,24 @@ summary {
 ##   Wt = col_double(),
 ##   Sa = col_double()
 ## )</code></pre>
+<pre class="r"><code>parasite_data = read_table2(&quot;HW5-parasite.txt&quot;) %&gt;% 
+  janitor::clean_names()</code></pre>
+<pre><code>## Parsed with column specification:
+## cols(
+##   Sample = col_double(),
+##   Intensity = col_double(),
+##   omit = col_double(),
+##   Year = col_double(),
+##   omit_1 = col_double(),
+##   omit_2 = col_double(),
+##   Length = col_double(),
+##   omit_3 = col_double(),
+##   omit_4 = col_double(),
+##   omit_5 = col_double(),
+##   Area = col_double()
+## )</code></pre>
+<div id="problem-1" class="section level2">
+<h2>Problem 1</h2>
 <div id="a" class="section level3">
 <h3>1-a</h3>
 <p>Fit a Poisson model (M1) with log link with W(carapace width) as the single predictor. Check the goodness of fit and interpret your model.</p>
@@ -491,8 +509,68 @@ phi</code></pre>
 ## AIC: 921.18
 ## 
 ## Number of Fisher Scoring iterations: 6</code></pre>
+<pre class="r"><code># # an equivalent way of estimating dispersion parameter
+# wave.glm3 &lt;- glm(damage~ship+year+period+offset(log(month)), family=quasi(link=log,variance=mu), data=wave, subset=month&gt;0)
+# summary(wave.glm3) # check ?quasi 
+# 
+# 
+# # test over-dispersion (half normal plot)
+# plot(qnorm((34+1:34+0.5)/(2*34+1.125)),sort(abs(res.p1)),xlab=&#39;Expected Half-Normal Order Stats&#39;,ylab=&#39;Ordered Abs Pearson Residuals&#39;)
+# abline(a=0,b=1)
+# abline(a=0,b=sqrt(phi),lty=2) </code></pre>
 <p>interpretation: ……………..</p>
 <p>The dispersion parameter is 3.156 for M2. After adjusting for over dispersion, it can be observed that the coefficients do not differ that much. However the covariate weight which was significant before adjusting for overdispersion becomes insignificant after adjusting for overdispersion.</p>
+</div>
+</div>
+<div id="problem-2" class="section level2">
+<h2>Problem 2</h2>
+<div id="a-1" class="section level3">
+<h3>2-a</h3>
+<p>Fit a Poisson model with log link to the data with area, year, and length as predictors. Interpret each model parameter.</p>
+<pre class="r"><code>mod1 = glm(intensity ~ area+year+length, family=poisson(link = &quot;log&quot;), data=parasite_data)
+summary(mod1)</code></pre>
+<pre><code>## 
+## Call:
+## glm(formula = intensity ~ area + year + length, family = poisson(link = &quot;log&quot;), 
+##     data = parasite_data)
+## 
+## Deviance Residuals: 
+##     Min       1Q   Median       3Q      Max  
+## -7.8212  -3.2132  -2.1600  -0.2209  30.2110  
+## 
+## Coefficients:
+##               Estimate Std. Error z value Pr(&gt;|z|)    
+## (Intercept)  1.957e+02  2.594e+01   7.544 4.55e-14 ***
+## area         6.201e-01  1.298e-02  47.767  &lt; 2e-16 ***
+## year        -9.710e-02  1.297e-02  -7.485 7.18e-14 ***
+## length      -2.972e-02  8.513e-04 -34.912  &lt; 2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## (Dispersion parameter for poisson family taken to be 1)
+## 
+##     Null deviance: 25797  on 1190  degrees of freedom
+## Residual deviance: 21312  on 1187  degrees of freedom
+##   (63 observations deleted due to missingness)
+## AIC: 23242
+## 
+## Number of Fisher Scoring iterations: 7</code></pre>
+<p>interpretation: ……………..</p>
+</div>
+<div id="b-1" class="section level3">
+<h3>2-b</h3>
+<p>Test for goodness of fit of the model in (a) and state conclusions.</p>
+<pre class="r"><code>deviance_mod1 = mod1$deviance
+df_mod1 =  mod1$df.residual
+pval_mod1=1-pchisq(deviance_mod1,df=df_mod1)
+pval_mod1</code></pre>
+<pre><code>## [1] 0</code></pre>
+<p>The p-value is 0 this means that we reject the null and conclude that the model does not fit the data well.</p>
+</div>
+<div id="c-1" class="section level3">
+<h3>2-c</h3>
+<p>Researchers suspect that there may be two strains of fish, one that is susceptible to parasites and one that is not. Without knowing which fish are susceptible, this could be regarded as a zero-inflated model. Building on the model in (a) (using the same predictors), fit an appropriate model to the data that can account for extra zeros. Provide an interpretation for each model parameter in terms of the problem.</p>
+</div>
 </div>
 
 
