@@ -12,6 +12,7 @@ library(tidyverse)
 library(viridis)
 library(ggplot2)
 library(readr)
+library(pscl)
 knitr::opts_chunk$set(
 	echo = TRUE,
 	warning = FALSE,
@@ -34,7 +35,11 @@ crab_data = read_table2("HW5-crab.txt") %>%
   janitor::clean_names()
 
 parasite_data = read_table2("HW5-parasite.txt") %>% 
-  janitor::clean_names()
+  janitor::clean_names() %>% 
+  mutate(
+    area= as.factor(area),
+    year= as.factor(year)
+  )
 ```
 
 ## Problem 1
@@ -110,14 +115,26 @@ The dispersion parameter is `r round(phi, 3)` for M2. After adjusting for over d
 
 ## Problem 2
 ### 2-a
-Fit a Poisson model with log link to the data with area, year, and length as predictors. Interpret each model parameter.
+In this part, I fitted a Poisson model with log link to the data with area, year, and length as predictors.
 ```{r}
 
 mod1 = glm(intensity ~ area+year+length, family=poisson(link = "log"), data=parasite_data)
 summary(mod1)
 ```
 
-interpretation: .................
+`r round(mod1$coefficients[2], 3)` is the log rate ratio of the number of parasites in area 2 versus area 1, holding year and length of the fish constant. 
+
+`r round(mod1$coefficients[3], 3)` is the log rate ratio of the number of parasites in area 3 versus area 1, holding year and length of the fish constant. 
+
+`r round(mod1$coefficients[4], 3)` is the log rate ratio of the number of parasites in area 4 versus area 1, holding year and length of the fish constant. 
+
+`r round(mod1$coefficients[5], 3)` is the log rate ratio of the number of parasites in year 2000 versus 1999, holding area and length of the fish constant. 
+
+`r round(mod1$coefficients[6], 3)` is the log rate ratio of the number of parasites in year 2001 versus 1999, holding area and length of the fish constant. 
+
+`r round(mod1$coefficients[7], 3)` is the log rate ratio of the number of parasites per each one unit increase in the length of the fish, holding area and year constant. 
+
+(???) In general, it is expected to see more parasites in fishes that are in area 4 compared to one and in year 2000 compared to 1999. In other areas, and years, fewer number of parasites are expected compared to reference categories, and also we expect to see fewer number of parasites by increasing the length of the fish. Also, all these variables have p-values smaller than 0.05 which shows that they are significant.
 
 ### 2-b
 Test for goodness of fit of the model in (a) and state conclusions.
@@ -126,15 +143,42 @@ Test for goodness of fit of the model in (a) and state conclusions.
 deviance_mod1 = mod1$deviance
 df_mod1 =  mod1$df.residual
 pval_mod1=1-pchisq(deviance_mod1,df=df_mod1)
-pval_mod1
 ```
 
-The p-value is `r round(pval_mod1, 3)` this means that we reject the null and conclude that the model does not fit the data well.
+To assess the good of fit of this model, I used Dec=viance analysis and observed that the model has deviance of `r deviance_mod1`. Comparing this result with $\chi^2$ with degree of freedom of `r df_mod1`, the p-value is `r round(pval_mod1, 3)`. This means that we should reject the null and conclude that the model does not fit the data well.
 
 ### 2-c
-Researchers suspect that there may be two strains of fish, one that is susceptible to parasites and one that is not. Without knowing which fish are susceptible, this could be regarded as a zero-inflated model. Building on the model in (a) (using the same predictors), fit an appropriate model to the data that can account for extra zeros. Provide an interpretation for
-each model parameter in terms of the problem.
-```{r}
+In this part I am interested in refit the model in part **a** that can account for extra zeros.
 
+From `r nrow(parasite_data)` rows in dataset, there are `r parasite_data %>% filter(intensity == 0) %>% nrow()` observations with zero intensity of zero. We can consider two types of zeros in the context of this problem:
+
+* True zeros: the strains which are not susceptible to parasites
+
+* Pseudo zeros: the strains that are susceptible to parasites but have zero parasites int he time of testing, od the parasites have not been detected.So, I will fit a zero-inflated model.
+
+I conditioned the model on area because the presence of parasite depends highly on the area we are investigating and I prefered to fix that when looking at the the difference between fish strains.
+```{r zip}
+
+mod2 = zeroinfl(intensity ~ year+length | area, data=parasite_data)
+summary(mod2)
 ```
 
+The model built has two parts: Count model and Zero-inflation model. 
+
+**For the count model:**
+
+Given that the fish strain is susceptible to parasites, `r round(mod2$coefficients$count[2], 3)` is the log rate ratio of the number of parasites in year 2000 versus 1999, holding length an darea constant. 
+
+Given that the fish strain is susceptible to parasites, `r round(mod2$coefficients$count[3], 3)` is the log rate ratio of the number of parasites in year 2001 versus 1999, holding length an darea constant. 
+
+Given that the fish strain is susceptible to parasites, `r round(mod2$coefficients$count[4], 3)` is the log rate ratio of the number of parasites per 1 unit increase in the length of the fish, holding length an darea constant.
+
+**For the zero-inflated model:**
+
+`r round(mod2$coefficients$zero[2], 3)` is the log odds ratio of being the fish strain susceptible to parasites in area 2 compared to area 1.
+
+`r round(mod2$coefficients$zero[3], 3)` is the log odds ratio of being the fish strain susceptible to parasites in area 3 compared to area 1.
+
+`r round(mod2$coefficients$zero[4], 3)` is the log odds ratio of being the fish strain susceptible to parasites in area 4 compared to area 1.
+
+(???)We can see that the rate of susceptible strain is higher in areas 2 and 3 compared to 1, but it is lower in area 4 compared to area 1. Also, all these variables are highly significant with p-values of smaller than 0.05. 

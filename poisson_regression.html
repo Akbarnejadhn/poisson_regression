@@ -381,7 +381,11 @@ summary {
 ##   Sa = col_double()
 ## )</code></pre>
 <pre class="r"><code>parasite_data = read_table2(&quot;HW5-parasite.txt&quot;) %&gt;% 
-  janitor::clean_names()</code></pre>
+  janitor::clean_names() %&gt;% 
+  mutate(
+    area= as.factor(area),
+    year= as.factor(year)
+  )</code></pre>
 <pre><code>## Parsed with column specification:
 ## cols(
 ##   Sample = col_double(),
@@ -526,7 +530,7 @@ phi</code></pre>
 <h2>Problem 2</h2>
 <div id="a-1" class="section level3">
 <h3>2-a</h3>
-<p>Fit a Poisson model with log link to the data with area, year, and length as predictors. Interpret each model parameter.</p>
+<p>In this part, I fitted a Poisson model with log link to the data with area, year, and length as predictors.</p>
 <pre class="r"><code>mod1 = glm(intensity ~ area+year+length, family=poisson(link = &quot;log&quot;), data=parasite_data)
 summary(mod1)</code></pre>
 <pre><code>## 
@@ -536,40 +540,91 @@ summary(mod1)</code></pre>
 ## 
 ## Deviance Residuals: 
 ##     Min       1Q   Median       3Q      Max  
-## -7.8212  -3.2132  -2.1600  -0.2209  30.2110  
+## -9.3632  -2.7158  -2.0142  -0.4731  30.2492  
 ## 
 ## Coefficients:
 ##               Estimate Std. Error z value Pr(&gt;|z|)    
-## (Intercept)  1.957e+02  2.594e+01   7.544 4.55e-14 ***
-## area         6.201e-01  1.298e-02  47.767  &lt; 2e-16 ***
-## year        -9.710e-02  1.297e-02  -7.485 7.18e-14 ***
-## length      -2.972e-02  8.513e-04 -34.912  &lt; 2e-16 ***
+## (Intercept)  2.6431709  0.0542838  48.692  &lt; 2e-16 ***
+## area2       -0.2119557  0.0491691  -4.311 1.63e-05 ***
+## area3       -0.1168602  0.0428296  -2.728  0.00636 ** 
+## area4        1.4049366  0.0356625  39.395  &lt; 2e-16 ***
+## year2000     0.6702801  0.0279823  23.954  &lt; 2e-16 ***
+## year2001    -0.2181393  0.0287535  -7.587 3.29e-14 ***
+## length      -0.0284228  0.0008809 -32.265  &lt; 2e-16 ***
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 ## 
 ## (Dispersion parameter for poisson family taken to be 1)
 ## 
 ##     Null deviance: 25797  on 1190  degrees of freedom
-## Residual deviance: 21312  on 1187  degrees of freedom
+## Residual deviance: 19153  on 1184  degrees of freedom
 ##   (63 observations deleted due to missingness)
-## AIC: 23242
+## AIC: 21089
 ## 
 ## Number of Fisher Scoring iterations: 7</code></pre>
-<p>interpretation: ……………..</p>
+<p>-0.212 is the log rate ratio of the number of parasites in area 2 versus area 1, holding year and length of the fish constant.</p>
+<p>-0.117 is the log rate ratio of the number of parasites in area 3 versus area 1, holding year and length of the fish constant.</p>
+<p>1.405 is the log rate ratio of the number of parasites in area 4 versus area 1, holding year and length of the fish constant.</p>
+<p>0.67 is the log rate ratio of the number of parasites in year 2000 versus 1999, holding area and length of the fish constant.</p>
+<p>-0.218 is the log rate ratio of the number of parasites in year 2001 versus 1999, holding area and length of the fish constant.</p>
+<p>-0.028 is the log rate ratio of the number of parasites per each one unit increase in the length of the fish, holding area and year constant.</p>
+<p>(???) In general, it is expected to see more parasites in fishes that are in area 4 compared to one and in year 2000 compared to 1999. In other areas, and years, fewer number of parasites are expected compared to reference categories, and also we expect to see fewer number of parasites by increasing the length of the fish. Also, all these variables have p-values smaller than 0.05 which shows that they are significant.</p>
 </div>
 <div id="b-1" class="section level3">
 <h3>2-b</h3>
 <p>Test for goodness of fit of the model in (a) and state conclusions.</p>
 <pre class="r"><code>deviance_mod1 = mod1$deviance
 df_mod1 =  mod1$df.residual
-pval_mod1=1-pchisq(deviance_mod1,df=df_mod1)
-pval_mod1</code></pre>
-<pre><code>## [1] 0</code></pre>
-<p>The p-value is 0 this means that we reject the null and conclude that the model does not fit the data well.</p>
+pval_mod1=1-pchisq(deviance_mod1,df=df_mod1)</code></pre>
+<p>To assess the good of fit of this model, I used Dec=viance analysis and observed that the model has deviance of 1.915279810^{4}. Comparing this result with <span class="math inline">\(\chi^2\)</span> with degree of freedom of 1184, the p-value is 0. This means that we should reject the null and conclude that the model does not fit the data well.</p>
 </div>
 <div id="c-1" class="section level3">
 <h3>2-c</h3>
-<p>Researchers suspect that there may be two strains of fish, one that is susceptible to parasites and one that is not. Without knowing which fish are susceptible, this could be regarded as a zero-inflated model. Building on the model in (a) (using the same predictors), fit an appropriate model to the data that can account for extra zeros. Provide an interpretation for each model parameter in terms of the problem.</p>
+<p>In this part I am interested in refit the model in part <strong>a</strong> that can account for extra zeros.</p>
+<p>From 1254 rows in dataset, there are 654 observations with zero intensity of zero. We can consider two types of zeros in the context of this problem:</p>
+<ul>
+<li><p>True zeros: the strains which are not susceptible to parasites</p></li>
+<li><p>Pseudo zeros: the strains that are susceptible to parasites but have zero parasites int he time of testing, od the parasites have not been detected.So, I will fit a zero-inflated model.</p></li>
+</ul>
+<p>I conditioned the model on area because the presence of parasite depends highly on the area we are investigating and I prefered to fix that when looking at the the difference between fish strains.</p>
+<pre class="r"><code>mod2 = zeroinfl(intensity ~ year+length | area, data=parasite_data)
+summary(mod2)</code></pre>
+<pre><code>## 
+## Call:
+## zeroinfl(formula = intensity ~ year + length | area, data = parasite_data)
+## 
+## Pearson residuals:
+##     Min      1Q  Median      3Q     Max 
+## -1.5077 -0.7131 -0.6447 -0.2369 26.2175 
+## 
+## Count model coefficients (poisson with log link):
+##               Estimate Std. Error z value Pr(&gt;|z|)    
+## (Intercept)  4.6630528  0.0459573 101.465  &lt; 2e-16 ***
+## year2000     0.4214742  0.0278972  15.108  &lt; 2e-16 ***
+## year2001     0.0988372  0.0286162   3.454 0.000553 ***
+## length      -0.0438777  0.0009298 -47.193  &lt; 2e-16 ***
+## 
+## Zero-inflation model coefficients (binomial with logit link):
+##              Estimate Std. Error z value Pr(&gt;|z|)    
+## (Intercept)  0.001796   0.121809   0.015    0.988    
+## area2        0.746780   0.183065   4.079 4.52e-05 ***
+## area3        0.680876   0.161795   4.208 2.57e-05 ***
+## area4       -0.882655   0.180987  -4.877 1.08e-06 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1 
+## 
+## Number of iterations in BFGS optimization: 15 
+## Log-likelihood: -7563 on 8 Df</code></pre>
+<p>The model built has two parts: Count model and Zero-inflation model.</p>
+<p><strong>For the count model:</strong></p>
+<p>Given that the fish strain is susceptible to parasites, 0.421 is the log rate ratio of the number of parasites in year 2000 versus 1999, holding length an darea constant.</p>
+<p>Given that the fish strain is susceptible to parasites, 0.099 is the log rate ratio of the number of parasites in year 2001 versus 1999, holding length an darea constant.</p>
+<p>Given that the fish strain is susceptible to parasites, -0.044 is the log rate ratio of the number of parasites per 1 unit increase in the length of the fish, holding length an darea constant.</p>
+<p><strong>For the zero-inflated model:</strong></p>
+<p>0.747 is the log odds ratio of being the fish strain susceptible to parasites in area 2 compared to area 1.</p>
+<p>0.681 is the log odds ratio of being the fish strain susceptible to parasites in area 3 compared to area 1.</p>
+<p>-0.883 is the log odds ratio of being the fish strain susceptible to parasites in area 4 compared to area 1.</p>
+<p>(???)We can see that the rate of susceptible strain is higher in areas 2 and 3 compared to 1, but it is lower in area 4 compared to area 1. Also, all these variables are highly significant with p-values of smaller than 0.05.</p>
 </div>
 </div>
 
