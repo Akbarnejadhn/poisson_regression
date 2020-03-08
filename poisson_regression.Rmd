@@ -13,6 +13,7 @@ library(viridis)
 library(ggplot2)
 library(readr)
 library(pscl)
+library(MASS)
 knitr::opts_chunk$set(
 	echo = TRUE,
 	warning = FALSE,
@@ -29,7 +30,7 @@ scale_fill_discrete = scale_fill_viridis_d
 theme_set(theme_minimal() + theme(legend.position = "bottom"))
 ```
 
-```{r data_import}
+```{r data_import, include=FALSE}
 
 crab_data = read_table2("HW5-crab.txt") %>% 
   janitor::clean_names()
@@ -49,7 +50,7 @@ Fit a Poisson model (M1) with log link with W(carapace width) as the single pred
 
 # fit poisson model
 m1 = glm(sa ~ w, family=poisson(link = "log"), data=crab_data)
-summary(m1)
+m1_summary = summary(m1)
 
 # gof
 deviance_m1 = m1$deviance
@@ -58,20 +59,32 @@ pval1=1-pchisq(deviance_m1,df=df_m1) # chisq test
 pval1                                # pvalue is 0 this shows that the fit is not good
 ```
 
-interpretation: .................
+The model shows that the log rate ratio of the number of satellites residing near female crabs is `r round(m1_summary$coefficients[2], 3)` per one unit increase in female crab's carapace width. The p-value for this covariate is 2*10^-16 which shows this covariate is highly significant in the model.
+
 Assessing the goodness of fit of this model shows that the he p-value is `r round(pval1, 3)` which means that this model does not fit the data well.
 
 ### 1-b
-Fit a model (M2) with W and Wt(weight) as predictors. Compare it with the model in (a). Interpret your results.
+In this part I am going to fit a model using both **weight** and **carapace width**:
+
 ```{r poi_w_wt}
 
 # fit poisson model
 m2 = glm(sa ~ w+wt, family=poisson(link = "log"), data=crab_data)
-summary(m2)
+m2_summary = summary(m2)
+
+```
+
+The model shows that the log rate ratio of the number of satellites residing near female crabs is `r round(m2_summary$coefficients[2], 3)` per one unit increase in female crab's carapace width, holding their weigt constant. The p-value for this covariate is `r round(m2_summary$coefficients[11], 3)` which shows this covariate is not significant in the model.
+
+Also, we can observe that the log rate ratio of the number of satellites residing near female crabs is `r round(m2_summary$coefficients[3], 3)` per one unit increase in female crab's weight, holding their carapace width constant. The p-value for this covariate is `r round(m2_summary$coefficients[12], 3)` which shows this covariate is significant in the model.
+
+Next I want to compare the model I have fitted with the model that I had fit using only **carapace width** as covariate. We do not consider over dispersion in this part yet.
+
+```{r m1_m2}
 
 # compare m_2 and m_1
 deviance_m2 = m2$deviance
-df_m2 =  m2$df.residual             # df=n-p   173-(2+1)=170
+df_m2 =  m2$df.residual             # df=n-p   173-3=170
 
 test_stat =m1$deviance - m2$deviance
 df =df_m1 - df_m2 
@@ -79,38 +92,47 @@ pval=1-pchisq(test_stat,df=df)      # chisq test
 pval
 ```
 
-interpretation: .................
-
-Comparing the small model using only carapace width as predictor and the bigger model using both carapace width and weight as predictors, we can see that the p-value is `r round(pval, 3)`. This shows that we reject null hypothesis (stating that the smaller moddel is legible), and conclude that the bigger model is the one that we should pick and continue with.
+Ignoring whether or not there is overdispersion ina ny of the models, when comparing the small model using only carapace width as predictor and the bigger model using both carapace width and weight as predictors, we can see that the p-value is `r round(pval,3)` This shows that we reject null hypothesis (stating that the smaller moddel is legible), and conclude that the bigger model is better, so we will consider **M2** as our model and move to the next part.
 
 ### 1-c
-Check over dispersion in M2. Interpret the model after adjusting for over dispersion.
-```{r overdisp}
+First I graph a half-normal plot to check if there is any over dispersion in model2.
+```{r overdisp} 
 
-# calc dispersion parameter based on full model
+# check overdispersion using half-normal plot
 p_res=residuals(m2,type='pearson',data=crab_data)
-G=sum(p_res^2)
-pval_disp=1-pchisq(G,df=170)
+G = sum(p_res^2)
 phi=G/170
-phi
-m2$deviance/m2$df.residual
-
-summary(m2,dispersion=phi)
-
-# # an equivalent way of estimating dispersion parameter
-# wave.glm3 <- glm(damage~ship+year+period+offset(log(month)), family=quasi(link=log,variance=mu), data=wave, subset=month>0)
-# summary(wave.glm3) # check ?quasi 
-# 
-# 
-# # test over-dispersion (half normal plot)
-# plot(qnorm((34+1:34+0.5)/(2*34+1.125)),sort(abs(res.p1)),xlab='Expected Half-Normal Order Stats',ylab='Ordered Abs Pearson Residuals')
-# abline(a=0,b=1)
-# abline(a=0,b=sqrt(phi),lty=2) 
+plot(qnorm((173+1:173+0.5)/(2*173+1.125)),sort(abs(p_res)),xlab='Expected Half-Normal Order Stats',ylab='Ordered Abs Pearson Residuals')
+abline(a=0,b=1)
+abline(a=0,b=sqrt(phi),lty=2)
 ```
 
-interpretation: .................
+The above plot shows that there is probably a source of overdispersion in the model because $\phi\neq 1$. Now, I will calculate the dispersion paarmeter and refit the model taking this parameter into account.
 
-The dispersion parameter is `r round(phi, 3)` for M2. After adjusting for over dispersion, it can be observed that the coefficients do not differ that much. However the covariate weight which was significant before adjusting for overdispersion becomes insignificant after adjusting for overdispersion.
+Equivalently, I could fit a negative binomial model to account for overdispersion without the need to calculate dispersion paarmeter and refitting the model.
+
+I am going to do it both ways and show the results:
+
+```{r}
+
+# calc dispersion parameter based on full model
+pval_disp=1-pchisq(G,df=170)
+m2$deviance/m2$df.residual
+
+m2_overdisp = summary(m2,dispersion=phi)
+m2_overdisp
+
+m2_nb=glm.nb(sa ~ w+wt,data=crab_data) ## glm.nb is a function from MASS to model negative binomial
+summary(m2_nb)
+
+```
+
+
+The dispersion parameter is `r round(phi, 3)` for M2. After adjusting for over dispersion, it can be observed that the coefficients do not differ that much. However the covariate **weight** which was significant before adjusting for overdispersion becomes insignificant after adjusting for overdispersion. We can also see that the overalll rsults are very similar using negative binomial model and the coefficients only slightly differ.
+
+After adjusting for overdispersion, we can observe that the log rate ratio of the number of satellites residing near female crabs is `r round(m2_overdisp$coefficients[2], 3)` per one unit increase in female crab's carapace width, holding their weigt constant. The p-value for this covariate after adjusting for overdispersion is `r round(m2_overdisp$coefficients[11], 3)` which shows this covariate is not significant in the model.
+
+Also, after adjusting for overdispersion we can observe that the log rate ratio of the number of satellites residing near female crabs is `r round(m2_overdisp$coefficients[3], 3)` per one unit increase in female crab's weight, holding their carapace width constant. The p-value for this covariate after adjusting for overdispersion is `r round(m2_overdisp$coefficients[12], 3)` which shows this covariate is not significant in the model.
 
 
 ## Problem 2
