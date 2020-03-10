@@ -2,7 +2,7 @@
 title: "Count Data, Poisson Regression"
 author: "Hana Akbarnejad"
 date: "3/10/2020"
-output: html_document
+output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
