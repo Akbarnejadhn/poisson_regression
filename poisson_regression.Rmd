@@ -1,7 +1,7 @@
 ---
-title: "Count Data, Poisson regression"
+title: "Count Data, Poisson Regression"
 author: "Hana Akbarnejad"
-date: "3/4/2020"
+date: "3/10/2020"
 output: html_document
 ---
 
@@ -45,12 +45,19 @@ parasite_data = read_table2("HW5-parasite.txt") %>%
 
 ## Problem 1
 ### 1-a
-Fit a Poisson model (M1) with log link with W(carapace width) as the single predictor. Check the goodness of fit and interpret your model.
+In this part, I want to fit a Poisson model (M1) with log link with W(carapace width) as the single predictor:
 ```{r poi_w}
 
 # fit poisson model
 m1 = glm(sa ~ w, family=poisson(link = "log"), data=crab_data)
 m1_summary = summary(m1)
+m1_summary
+```
+
+The model shows that the log rate ratio of the number of satellites residing near female crabs is `r round(m1_summary$coefficients[2], 3)` per one unit increase in female crab's carapace width. The p-value for this covariate is much smaller than 0.05 and shows this covariate is highly significant in the model. We can also see that the coeffcicient is positive which means that by increase in the width it is likely that on average there are more number of crabs with the female.
+
+Now, I would like to Check the goodness of fit and interpret the model:
+```{r}
 
 # gof
 deviance_m1 = m1$deviance
@@ -59,9 +66,7 @@ pval1=1-pchisq(deviance_m1,df=df_m1) # chisq test
 pval1                                # pvalue is 0 this shows that the fit is not good
 ```
 
-The model shows that the log rate ratio of the number of satellites residing near female crabs is `r round(m1_summary$coefficients[2], 3)` per one unit increase in female crab's carapace width. The p-value for this covariate is 2*10^-16 which shows this covariate is highly significant in the model.
-
-Assessing the goodness of fit of this model shows that the he p-value is `r round(pval1, 3)` which means that this model does not fit the data well.
+Assessing the goodness of fit of this model, we can see that the deviance is `r round(deviance_m1, 3)`. Comparing this value with $\chi^2$ with degree of freedom `r df_m1`, the p-value is `r round(pval1, 3)`. This means that this model does not fit the data well.
 
 ### 1-b
 In this part I am going to fit a model using both **weight** and **carapace width**:
@@ -189,18 +194,18 @@ The model built has two parts: Count model and Zero-inflation model.
 
 **For the count model:**
 
-Given that the fish strain is susceptible to parasites, `r round(mod2$coefficients$count[2], 3)` is the log rate ratio of the number of parasites in year 2000 versus 1999, holding length an darea constant. 
+Given that the fish strain is susceptible to parasites, `r round(mod2$coefficients$count[2], 3)` is the log rate ratio of the number of parasites in year 2000 versus 1999, holding length constant. 
 
-Given that the fish strain is susceptible to parasites, `r round(mod2$coefficients$count[3], 3)` is the log rate ratio of the number of parasites in year 2001 versus 1999, holding length an darea constant. 
+Given that the fish strain is susceptible to parasites, `r round(mod2$coefficients$count[3], 3)` is the log rate ratio of the number of parasites in year 2001 versus 1999, holding length constant. 
 
-Given that the fish strain is susceptible to parasites, `r round(mod2$coefficients$count[4], 3)` is the log rate ratio of the number of parasites per 1 unit increase in the length of the fish, holding length an darea constant.
+Given that the fish strain is susceptible to parasites, `r round(mod2$coefficients$count[4], 3)` is the log rate ratio of the number of parasites per 1 unit increase in the length of the fish, holding year constant.
 
 **For the zero-inflated model:**
 
-`r round(mod2$coefficients$zero[2], 3)` is the log odds ratio of being the fish strain susceptible to parasites in area 2 compared to area 1.
+`r round(mod2$coefficients$zero[2], 3)` is the log odds ratio of being the fish strain not being susceptible to parasites in area 2 compared to area 1.
 
-`r round(mod2$coefficients$zero[3], 3)` is the log odds ratio of being the fish strain susceptible to parasites in area 3 compared to area 1.
+`r round(mod2$coefficients$zero[3], 3)` is the log odds ratio of being the fish strain not being susceptible to parasites in area 3 compared to area 1.
 
-`r round(mod2$coefficients$zero[4], 3)` is the log odds ratio of being the fish strain susceptible to parasites in area 4 compared to area 1.
+`r round(mod2$coefficients$zero[4], 3)` is the log odds ratio of being the fish strain not being susceptible to parasites in area 4 compared to area 1.
 
 (???)We can see that the rate of susceptible strain is higher in areas 2 and 3 compared to 1, but it is lower in area 4 compared to area 1. Also, all these variables are highly significant with p-values of smaller than 0.05. 
