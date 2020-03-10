@@ -412,11 +412,35 @@ pval1                                # pvalue is 0 this shows that the fit is no
 </div>
 <div id="b" class="section level3">
 <h3>1-b</h3>
-<p>In this part I am going to fit a model using both <strong>weight</strong> and <strong>carapace width</strong>:</p>
+<p>In this part I am going to fit a poisson model using both <strong>weight</strong> and <strong>carapace width</strong>:</p>
 <pre class="r"><code># fit poisson model
 m2 = glm(sa ~ w+wt, family=poisson(link = &quot;log&quot;), data=crab_data)
-m2_summary = summary(m2)</code></pre>
-<p>The model shows that the log rate ratio of the number of satellites residing near female crabs is 0.046 per one unit increase in female crab’s carapace width, holding their weigt constant. The p-value for this covariate is 0.326 which shows this covariate is not significant in the model.</p>
+m2_summary = summary(m2)
+m2_summary</code></pre>
+<pre><code>## 
+## Call:
+## glm(formula = sa ~ w + wt, family = poisson(link = &quot;log&quot;), data = crab_data)
+## 
+## Deviance Residuals: 
+##     Min       1Q   Median       3Q      Max  
+## -2.9308  -1.9705  -0.5481   0.9700   4.9905  
+## 
+## Coefficients:
+##             Estimate Std. Error z value Pr(&gt;|z|)   
+## (Intercept) -1.29168    0.89929  -1.436  0.15091   
+## w            0.04590    0.04677   0.981  0.32640   
+## wt           0.44744    0.15864   2.820  0.00479 **
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## (Dispersion parameter for poisson family taken to be 1)
+## 
+##     Null deviance: 632.79  on 172  degrees of freedom
+## Residual deviance: 559.89  on 170  degrees of freedom
+## AIC: 921.18
+## 
+## Number of Fisher Scoring iterations: 6</code></pre>
+<p>The model shows that the log rate ratio of the number of satellites residing near female crabs is 0.046 per one unit increase in female crab’s carapace width, holding their weight constant. The p-value for this covariate is 0.326 which shows this covariate is not significant in the model anymore.</p>
 <p>Also, we can observe that the log rate ratio of the number of satellites residing near female crabs is 0.447 per one unit increase in female crab’s weight, holding their carapace width constant. The p-value for this covariate is 0.005 which shows this covariate is significant in the model.</p>
 <p>Next I want to compare the model I have fitted with the model that I had fit using only <strong>carapace width</strong> as covariate. We do not consider over dispersion in this part yet.</p>
 <pre class="r"><code># compare m_2 and m_1
@@ -428,7 +452,7 @@ df =df_m1 - df_m2
 pval=1-pchisq(test_stat,df=df)      # chisq test
 pval</code></pre>
 <pre><code>## [1] 0.004694838</code></pre>
-<p>Ignoring whether or not there is overdispersion ina ny of the models, when comparing the small model using only carapace width as predictor and the bigger model using both carapace width and weight as predictors, we can see that the p-value is 0.005 This shows that we reject null hypothesis (stating that the smaller moddel is legible), and conclude that the bigger model is better, so we will consider <strong>M2</strong> as our model and move to the next part.</p>
+<p>Ignoring whether or not there is overdispersion in any of the models, when comparing the small model using only carapace width as predictor and the bigger model using both carapace width and weight as predictors, we can see that deviance is 559.885. Comparing this devianve value with <span class="math inline">\(\chi^2\)</span> distribution with degree of freedom 1 (the difference between the bigger model and df of smaller model), we observe that the p-value is 0.005 This shows that we reject null hypothesis (stating that the smaller moddel is legible), and conclude that the bigger model is better, so we will consider <strong>M2</strong> as our model and move to the next part.</p>
 </div>
 <div id="c" class="section level3">
 <h3>1-c</h3>
