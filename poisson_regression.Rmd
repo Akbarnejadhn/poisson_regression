@@ -177,11 +177,15 @@ To assess the good of fit of this model, I used deviance analysis and observed t
 ### 2-c
 In this part I am interested in refit the model in part **a** that can account for extra zeros.
 
-From `r nrow(parasite_data)` rows in dataset, there are `r parasite_data %>% filter(intensity == 0) %>% nrow()` observations with zero intensity of zero. We can consider two types of zeros in the context of this problem:
+**Note: In this model, I assumed that the presence or absence of parasites depend on the area that the fish is living in, and intensity of parasites (if they have any) depends on the year and length of the fish**
 
-* True zeros: the strains which are not susceptible to parasites
+From `r nrow(parasite_data)` rows in dataset, there are `r parasite_data %>% filter(intensity == 0) %>% nrow()` observations with intensity of zero. We can consider two types of zeros in the context of this problem:
 
-* Pseudo zeros: the strains that are susceptible to parasites but have zero parasites int he time of testing, od the parasites have not been detected.So, I will fit a zero-inflated model.
+* True zeros: the strains are not susceptible to parasites
+
+* Pseudo zeros: the strains that are susceptible to parasites but the parasites have not been detected.
+
+This said, I will fit a zero-inflated model.
 
 I conditioned the model on area because the presence of parasite depends highly on the area we are investigating and I prefered to fix that when looking at the the difference between fish strains.
 ```{r zip}
@@ -208,4 +212,4 @@ Given that the fish strain is susceptible to parasites, `r round(mod2$coefficien
 
 `r round(mod2$coefficients$zero[4], 3)` is the log odds ratio of being the fish strain not being susceptible to parasites in area 4 compared to area 1.
 
-(???)We can see that the rate of susceptible strain is higher in areas 2 and 3 compared to 1, but it is lower in area 4 compared to area 1. Also, all these variables are highly significant with p-values of smaller than 0.05. 
+We can see that all predictors have p-va;ue smaller than 0.05 which shows that the predictors are statistically significance in the model.

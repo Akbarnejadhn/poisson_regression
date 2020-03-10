@@ -587,11 +587,13 @@ pval_mod1=1-pchisq(deviance_mod1,df=df_mod1)</code></pre>
 <div id="c-1" class="section level3">
 <h3>2-c</h3>
 <p>In this part I am interested in refit the model in part <strong>a</strong> that can account for extra zeros.</p>
-<p>From 1254 rows in dataset, there are 654 observations with zero intensity of zero. We can consider two types of zeros in the context of this problem:</p>
+<p><strong>Note: In this model, I assumed that the presence or absence of parasites depend on the area that the fish is living in, and intensity of parasites (if they have any) depends on the year and length of the fish</strong></p>
+<p>From 1254 rows in dataset, there are 654 observations with intensity of zero. We can consider two types of zeros in the context of this problem:</p>
 <ul>
-<li><p>True zeros: the strains which are not susceptible to parasites</p></li>
-<li><p>Pseudo zeros: the strains that are susceptible to parasites but have zero parasites int he time of testing, od the parasites have not been detected.So, I will fit a zero-inflated model.</p></li>
+<li><p>True zeros: the strains are not susceptible to parasites</p></li>
+<li><p>Pseudo zeros: the strains that are susceptible to parasites but the parasites have not been detected.</p></li>
 </ul>
+<p>This said, I will fit a zero-inflated model.</p>
 <p>I conditioned the model on area because the presence of parasite depends highly on the area we are investigating and I prefered to fix that when looking at the the difference between fish strains.</p>
 <pre class="r"><code>mod2 = zeroinfl(intensity ~ year+length | area, data=parasite_data)
 summary(mod2)</code></pre>
@@ -630,7 +632,7 @@ summary(mod2)</code></pre>
 <p>0.747 is the log odds ratio of being the fish strain not being susceptible to parasites in area 2 compared to area 1.</p>
 <p>0.681 is the log odds ratio of being the fish strain not being susceptible to parasites in area 3 compared to area 1.</p>
 <p>-0.883 is the log odds ratio of being the fish strain not being susceptible to parasites in area 4 compared to area 1.</p>
-<p>(???)We can see that the rate of susceptible strain is higher in areas 2 and 3 compared to 1, but it is lower in area 4 compared to area 1. Also, all these variables are highly significant with p-values of smaller than 0.05.</p>
+<p>We can see that all predictors have p-va;ue smaller than 0.05 which shows that the predictors are statistically significance in the model.</p>
 </div>
 </div>
 
