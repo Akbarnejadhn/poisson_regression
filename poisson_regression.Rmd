@@ -164,7 +164,7 @@ summary(mod1)
 Note that all these variables have p-value of smaller than 0.05, which shows these variables are significant in our model.
 
 ### 2-b
-Test for goodness of fit of the model in (a) and state conclusions.
+Now I am going to test the model I have built in previous part for goodness of fit.
 ```{r mod1_gof}
 
 deviance_mod1 = mod1$deviance
@@ -172,7 +172,7 @@ df_mod1 =  mod1$df.residual
 pval_mod1=1-pchisq(deviance_mod1,df=df_mod1)
 ```
 
-To assess the good of fit of this model, I used Dec=viance analysis and observed that the model has deviance of `r deviance_mod1`. Comparing this result with $\chi^2$ with degree of freedom of `r df_mod1`, the p-value is `r round(pval_mod1, 3)`. This means that we should reject the null and conclude that the model does not fit the data well.
+To assess the good of fit of this model, I used deviance analysis and observed that the model has deviance of `r deviance_mod1` which is very high. Comparing this result with $\chi^2$ with degree of freedom of `r df_mod1` (63 observations deleted due to missingness), the p-value is `r round(pval_mod1, 3)`. This means that we should reject the null and conclude that the model does not fit the data well.
 
 ### 2-c
 In this part I am interested in refit the model in part **a** that can account for extra zeros.
