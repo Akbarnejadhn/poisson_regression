@@ -112,7 +112,7 @@ abline(a=0,b=1)
 abline(a=0,b=sqrt(phi),lty=2)
 ```
 
-The above plot shows that there is probably a source of overdispersion in the model because $\phi\neq 1$. Now, I will calculate the dispersion paarmeter and refit the model taking this parameter into account.
+The above plot shows that there is probably a source of overdispersion in the model because $\phi\neq 1$. Now, I will calculate the dispersion parameter and refit the model taking this parameter into account.
 
 Equivalently, I could fit a negative binomial model to account for overdispersion without the need to calculate dispersion paarmeter and refitting the model.
 
@@ -133,7 +133,7 @@ summary(m2_nb)
 ```
 
 
-The dispersion parameter is `r round(phi, 3)` for M2. After adjusting for over dispersion, it can be observed that the coefficients do not differ that much. However the covariate **weight** which was significant before adjusting for overdispersion becomes insignificant after adjusting for overdispersion. We can also see that the overalll rsults are very similar using negative binomial model and the coefficients only slightly differ.
+The dispersion parameter is `r round(phi, 3)` for M2. After adjusting for over dispersion, it can be observed that the coefficients do not differ that much. However the covariate **weight** which was significant before adjusting for overdispersion becomes insignificant after adjusting for overdispersion. We can also see that the overalll results are similar using negative binomial model.
 
 After adjusting for overdispersion, we can observe that the log rate ratio of the number of satellites residing near female crabs is `r round(m2_overdisp$coefficients[2], 3)` per one unit increase in female crab's carapace width, holding their weigt constant. The p-value for this covariate after adjusting for overdispersion is `r round(m2_overdisp$coefficients[11], 3)` which shows this covariate is not significant in the model.
 
