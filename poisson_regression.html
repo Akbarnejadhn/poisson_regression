@@ -536,7 +536,7 @@ summary(m2_nb)</code></pre>
 <h2>Problem 2</h2>
 <div id="a-1" class="section level3">
 <h3>2-a</h3>
-<p>In this part, I fitted a Poisson model with log link to the data with area, year, and length as predictors.</p>
+<p>In this part, I fitted a Poisson model with log link function to the data with area, year, and length as predictors.</p>
 <pre class="r"><code>mod1 = glm(intensity ~ area+year+length, family=poisson(link = &quot;log&quot;), data=parasite_data)
 summary(mod1)</code></pre>
 <pre><code>## 
@@ -574,7 +574,7 @@ summary(mod1)</code></pre>
 <p>0.67 is the log rate ratio of the number of parasites in year 2000 versus 1999, holding area and length of the fish constant.</p>
 <p>-0.218 is the log rate ratio of the number of parasites in year 2001 versus 1999, holding area and length of the fish constant.</p>
 <p>-0.028 is the log rate ratio of the number of parasites per each one unit increase in the length of the fish, holding area and year constant.</p>
-<p>(???) In general, it is expected to see more parasites in fishes that are in area 4 compared to one and in year 2000 compared to 1999. In other areas, and years, fewer number of parasites are expected compared to reference categories, and also we expect to see fewer number of parasites by increasing the length of the fish. Also, all these variables have p-values smaller than 0.05 which shows that they are significant.</p>
+<p>Note that all these variables have p-value of smaller than 0.05, which shows these variables are significant in our model.</p>
 </div>
 <div id="b-1" class="section level3">
 <h3>2-b</h3>

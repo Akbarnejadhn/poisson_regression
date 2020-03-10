@@ -142,7 +142,7 @@ Also, after adjusting for overdispersion we can observe that the log rate ratio 
 
 ## Problem 2
 ### 2-a
-In this part, I fitted a Poisson model with log link to the data with area, year, and length as predictors.
+In this part, I fitted a Poisson model with log link function to the data with area, year, and length as predictors.
 ```{r}
 
 mod1 = glm(intensity ~ area+year+length, family=poisson(link = "log"), data=parasite_data)
@@ -159,9 +159,9 @@ summary(mod1)
 
 `r round(mod1$coefficients[6], 3)` is the log rate ratio of the number of parasites in year 2001 versus 1999, holding area and length of the fish constant. 
 
-`r round(mod1$coefficients[7], 3)` is the log rate ratio of the number of parasites per each one unit increase in the length of the fish, holding area and year constant. 
+`r round(mod1$coefficients[7], 3)` is the log rate ratio of the number of parasites per each one unit increase in the length of the fish, holding area and year constant.
 
-(???) In general, it is expected to see more parasites in fishes that are in area 4 compared to one and in year 2000 compared to 1999. In other areas, and years, fewer number of parasites are expected compared to reference categories, and also we expect to see fewer number of parasites by increasing the length of the fish. Also, all these variables have p-values smaller than 0.05 which shows that they are significant.
+Note that all these variables have p-value of smaller than 0.05, which shows these variables are significant in our model.
 
 ### 2-b
 Test for goodness of fit of the model in (a) and state conclusions.
